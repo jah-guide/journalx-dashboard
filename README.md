@@ -22,7 +22,7 @@ JournalX is a dark, focused trading journal for reviewing ideas, logging executi
 You need Node.js and npm installed.
 
 ```bash
-git clone https://github.com/officialslimbou/journalx-dashboard.git
+git clone https://github.com/jah-guide/journalx-dashboard.git
 cd journalx-dashboard
 npm install
 npm run dev

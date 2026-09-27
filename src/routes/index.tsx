@@ -3,7 +3,16 @@ import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { EquityChart } from "@/components/EquityChart";
-import { Bar, Metric, OutcomeBadge, Panel, RValue, SectionTitle } from "@/components/ui-kit";
+import {
+  Metric,
+  OutcomeBadge,
+  PageHeader,
+  Panel,
+  RValue,
+  SectionTitle,
+  StatRow,
+  formInputClass,
+} from "@/components/ui-kit";
 import { cumulative, fmtDate, groupBy, stats, trades } from "@/lib/trades";
 import { ArrowUpRight } from "lucide-react";
 
@@ -41,31 +50,39 @@ function Dashboard() {
   const recent = visibleTrades.slice(0, 5);
   const best = bySession[0];
 
+  const periodLabel = period === "all" ? "all time" : `the last ${period} days`;
+
   return (
     <AppShell>
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-        <p className="text-sm text-muted-foreground">Welcome back, Alex</p>
-        <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Your edge, at a glance</h1>
-        <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-          {s.total} trades logged this cycle. You are running{" "}
-          <span className="text-win">{s.totalR.toFixed(1)}R</span> with a{" "}
-          {s.winRate.toFixed(0)}% win rate — strongest during the {best?.name} session.
-        </p>
-        </div>
-        <label className="text-xs text-muted-foreground">
-          <span className="sr-only">Dashboard period</span>
-          <select
-            value={period}
-            onChange={(event) => setPeriod(event.target.value as "7" | "30" | "all")}
-            className="rounded-lg border border-input bg-panel px-3 py-2 text-sm text-foreground outline-none focus:border-primary/60"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="all">All time</option>
-          </select>
-        </label>
-      </header>
+      <PageHeader
+        eyebrow="Welcome back, Alex"
+        title="Your edge, at a glance"
+        description={
+          <>
+            {s.total} trades in {periodLabel}. Running{" "}
+            <span className="num font-medium text-win">
+              {s.totalR > 0 ? "+" : ""}
+              {s.totalR.toFixed(1)}R
+            </span>{" "}
+            at {s.winRate.toFixed(0)}% win rate
+            {best ? ` — strongest in ${best.name}.` : "."}
+          </>
+        }
+        action={
+          <label className="flex flex-col gap-1.5 text-right">
+            <span className="label-caps">Period</span>
+            <select
+              value={period}
+              onChange={(event) => setPeriod(event.target.value as "7" | "30" | "all")}
+              className={`${formInputClass} min-w-[140px]`}
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="all">All time</option>
+            </select>
+          </label>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric
@@ -79,11 +96,19 @@ function Dashboard() {
           value={`${s.winRate.toFixed(0)}%`}
           hint={`${s.wins}W · ${s.losses}L · ${s.breakevens}BE`}
         />
-        <Metric label="Total trades" value={`${s.total}`} hint={period === "all" ? "All time" : `Last ${period} days`} />
+        <Metric
+          label="Total trades"
+          value={`${s.total}`}
+          hint={period === "all" ? "All time" : `Last ${period} days`}
+        />
         <Metric
           label="Best session"
           value={best?.name ?? "—"}
-          hint={`${best?.totalR.toFixed(1)}R · ${best?.winRate.toFixed(0)}% win rate`}
+          hint={
+            best
+              ? `${best.totalR.toFixed(1)}R · ${best.winRate.toFixed(0)}% win rate`
+              : "Log trades to compare sessions"
+          }
         />
       </div>
 
@@ -99,18 +124,15 @@ function Dashboard() {
 
         <Panel>
           <SectionTitle>By session</SectionTitle>
-          <ul className="space-y-4">
+          <ul className="space-y-5">
             {bySession.map((g) => (
-              <li key={g.name}>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>{g.name}</span>
-                  <RValue r={g.totalR} />
-                </div>
-                <Bar value={g.winRate} />
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  {g.winRate.toFixed(0)}% win · {g.total} trades
-                </p>
-              </li>
+              <StatRow
+                key={g.name}
+                name={g.name}
+                totalR={g.totalR}
+                winRate={g.winRate}
+                total={g.total}
+              />
             ))}
           </ul>
         </Panel>
@@ -122,7 +144,7 @@ function Dashboard() {
             action={
               <Link
                 to="/history"
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
                 View all <ArrowUpRight className="h-3 w-3" />
               </Link>
@@ -130,13 +152,13 @@ function Dashboard() {
           >
             Recent trades
           </SectionTitle>
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-border/70">
             {recent.map((t) => (
               <li key={t.id}>
                 <Link
                   to="/history"
                   search={{ trade: t.id }}
-                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-3 transition-colors hover:bg-accent/40"
+                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-3.5 transition-colors hover:bg-accent/30 -mx-2 px-2 rounded-lg"
                 >
                   <img
                     src={t.screenshot}
@@ -144,7 +166,7 @@ function Dashboard() {
                     loading="lazy"
                     width={1024}
                     height={640}
-                    className="h-11 w-16 shrink-0 rounded-md border border-border object-cover"
+                    className="h-12 w-[4.5rem] shrink-0 rounded-md border border-border/80 object-cover"
                   />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{t.pair}</p>
@@ -164,18 +186,15 @@ function Dashboard() {
 
         <Panel>
           <SectionTitle>Top pairs</SectionTitle>
-          <ul className="space-y-4">
+          <ul className="space-y-5">
             {byPair.map((g) => (
-              <li key={g.name}>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>{g.name}</span>
-                  <RValue r={g.totalR} />
-                </div>
-                <Bar value={g.winRate} />
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  {g.winRate.toFixed(0)}% win · {g.total} trades
-                </p>
-              </li>
+              <StatRow
+                key={g.name}
+                name={g.name}
+                totalR={g.totalR}
+                winRate={g.winRate}
+                total={g.total}
+              />
             ))}
           </ul>
         </Panel>

@@ -3,15 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ImagePlus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { Panel } from "@/components/ui-kit";
+import { PageHeader, Panel, formInputClass, formLabelClass } from "@/components/ui-kit";
 import { OUTCOMES, PAIRS, SESSIONS, type Outcome, type Session } from "@/lib/trades";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/add-trade")({ component: AddTrade });
-
-const inputClass =
-  "w-full rounded-lg border border-input bg-panel px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60";
-const labelClass = "mb-2 block text-xs uppercase tracking-widest text-muted-foreground";
 
 function AddTrade() {
   const [pair, setPair] = useState("");
@@ -63,12 +59,10 @@ function AddTrade() {
 
   return (
     <AppShell>
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Add trade</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Capture the plan first, then return to the same trade to record the result.
-        </p>
-      </header>
+      <PageHeader
+        title="Add trade"
+        description="Capture the plan first, then return to record outcome and achieved R. No money fields — risk multiples only."
+      />
 
       <form onSubmit={save} className="max-w-5xl space-y-6">
         <Panel>
@@ -80,22 +74,22 @@ function AddTrade() {
             <div className="space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className={labelClass} htmlFor="pair">Trading pair</label>
+                  <label className={formLabelClass} htmlFor="pair">Trading pair</label>
                   <div ref={pairPickerRef} className="relative">
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input id="pair" className={cn(inputClass, "pl-9")} placeholder="Search pairs…" value={pair || query} onFocus={() => setOpen(true)} onChange={(e) => { setQuery(e.target.value); setPair(""); setOpen(true); }} autoComplete="off" />
+                    <input id="pair" className={cn(formInputClass, "pl-9")} placeholder="Search pairs…" value={pair || query} onFocus={() => setOpen(true)} onChange={(e) => { setQuery(e.target.value); setPair(""); setOpen(true); }} autoComplete="off" />
                     {pair ? <button type="button" aria-label="Clear pair" onClick={() => { setPair(""); setQuery(""); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button> : null}
                     {open && !pair ? <ul className="absolute z-10 mt-2 max-h-56 w-full overflow-auto rounded-lg border border-border bg-popover p-1 shadow-xl">{matches.length ? matches.map((candidate) => <li key={candidate}><button type="button" onClick={() => { setPair(candidate); setQuery(""); setOpen(false); }} className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-accent">{candidate}</button></li>) : <li className="px-3 py-2 text-sm text-muted-foreground">No pairs found</li>}</ul> : null}
                   </div>
                 </div>
-                <div><label className={labelClass} htmlFor="trade-date">Entry date & time</label><input id="trade-date" type="datetime-local" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} className={inputClass} /></div>
+                <div><label className={formLabelClass} htmlFor="trade-date">Entry date & time</label><input id="trade-date" type="datetime-local" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} className={formInputClass} /></div>
               </div>
               <div className="grid gap-6 sm:grid-cols-2">
-                <div><span className={labelClass}>Session</span><div className="grid grid-cols-3 gap-2">{SESSIONS.map((item) => <Choice key={item} active={session === item} onClick={() => setSession(item)}>{item}</Choice>)}</div></div>
-                <div><label className={labelClass} htmlFor="planned-reward">Planned risk-to-reward</label><input id="planned-reward" placeholder="e.g. 1:3" value={plannedReward} onChange={(e) => setPlannedReward(e.target.value)} className={inputClass} /><p className="mt-2 text-xs text-muted-foreground">The reward you planned relative to one unit of risk.</p></div>
+                <div><span className={formLabelClass}>Session</span><div className="grid grid-cols-3 gap-2">{SESSIONS.map((item) => <Choice key={item} active={session === item} onClick={() => setSession(item)}>{item}</Choice>)}</div></div>
+                <div><label className={formLabelClass} htmlFor="planned-reward">Planned risk-to-reward</label><input id="planned-reward" placeholder="e.g. 1:3" value={plannedReward} onChange={(e) => setPlannedReward(e.target.value)} className={formInputClass} /><p className="mt-2 text-xs text-muted-foreground">The reward you planned relative to one unit of risk.</p></div>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2"><div><label className={labelClass} htmlFor="setup">Setup / tag <span className="normal-case tracking-normal">(optional)</span></label><input id="setup" placeholder="Liquidity sweep, order block…" value={setup} onChange={(e) => setSetup(e.target.value)} className={inputClass} /></div></div>
-              <div><label className={labelClass} htmlFor="plan-notes">Trade thesis <span className="normal-case tracking-normal">(optional)</span></label><textarea id="plan-notes" rows={4} placeholder="What has to happen for this trade to be valid?" value={planNotes} onChange={(e) => setPlanNotes(e.target.value)} className={cn(inputClass, "resize-y")} /></div>
+              <div className="grid gap-6 sm:grid-cols-2"><div><label className={formLabelClass} htmlFor="setup">Setup / tag <span className="normal-case tracking-normal">(optional)</span></label><input id="setup" placeholder="Liquidity sweep, order block…" value={setup} onChange={(e) => setSetup(e.target.value)} className={formInputClass} /></div></div>
+              <div><label className={formLabelClass} htmlFor="plan-notes">Trade thesis <span className="normal-case tracking-normal">(optional)</span></label><textarea id="plan-notes" rows={4} placeholder="What has to happen for this trade to be valid?" value={planNotes} onChange={(e) => setPlanNotes(e.target.value)} className={cn(formInputClass, "resize-y")} /></div>
             </div>
             <ImageUpload label="Before chart" helper="Optional chart at entry or pending order" image={beforeShot} inputRef={beforeFileRef} onPick={(file) => pickImage(file, setBeforeShot)} onRemove={() => setBeforeShot(null)} />
           </div>
@@ -104,22 +98,22 @@ function AddTrade() {
         <Panel>
           <div className="mb-6 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">2</span><div><h2 className="font-medium">After the trade</h2><p className="text-xs text-muted-foreground">Optional while the trade is still pending. Complete it once you have an outcome.</p></div></div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-            <div className="space-y-6"><div><span className={labelClass}>Outcome</span><div className="grid max-w-md grid-cols-3 gap-2">{OUTCOMES.map((item) => <Choice key={item} active={outcome === item} tone={item === "Win" ? "win" : item === "Loss" ? "loss" : "neutral"} onClick={() => setOutcome(item)}>{item}</Choice>)}</div></div>
-              <div><label className={labelClass} htmlFor="achieved-reward">Achieved reward <span className="normal-case tracking-normal">(R)</span></label><input id="achieved-reward" type="number" step="0.1" inputMode="decimal" placeholder="e.g. 2.4, -1, or 0" value={achievedReward} onChange={(e) => setAchievedReward(e.target.value)} className={cn(inputClass, "max-w-md num")} /><p className="mt-2 text-xs text-muted-foreground">Your actual result relative to one unit of risk. No money is tracked.</p></div>
-              <div><label className={labelClass} htmlFor="review-notes">Trade review <span className="normal-case tracking-normal">(optional)</span></label><textarea id="review-notes" rows={4} placeholder="What happened? Did you follow your plan?" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} className={cn(inputClass, "resize-y")} /></div>
+            <div className="space-y-6"><div><span className={formLabelClass}>Outcome</span><div className="grid max-w-md grid-cols-3 gap-2">{OUTCOMES.map((item) => <Choice key={item} active={outcome === item} tone={item === "Win" ? "win" : item === "Loss" ? "loss" : "neutral"} onClick={() => setOutcome(item)}>{item}</Choice>)}</div></div>
+              <div><label className={formLabelClass} htmlFor="achieved-reward">Achieved reward <span className="normal-case tracking-normal">(R)</span></label><input id="achieved-reward" type="number" step="0.1" inputMode="decimal" placeholder="e.g. 2.4, -1, or 0" value={achievedReward} onChange={(e) => setAchievedReward(e.target.value)} className={cn(formInputClass, "max-w-md num")} /><p className="mt-2 text-xs text-muted-foreground">Your actual result relative to one unit of risk. No money is tracked.</p></div>
+              <div><label className={formLabelClass} htmlFor="review-notes">Trade review <span className="normal-case tracking-normal">(optional)</span></label><textarea id="review-notes" rows={4} placeholder="What happened? Did you follow your plan?" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} className={cn(formInputClass, "resize-y")} /></div>
             </div>
             <ImageUpload label="After chart" helper="Optional chart after exit" image={afterShot} inputRef={afterFileRef} onPick={(file) => pickImage(file, setAfterShot)} onRemove={() => setAfterShot(null)} />
           </div>
         </Panel>
 
-        <button type="submit" className="flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"><Check className="h-4 w-4" /> {outcome ? "Save completed trade" : "Save as pending trade"}</button>
+        <button type="submit" className="flex w-full max-w-md items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_32px_-12px_var(--color-primary)] transition-opacity hover:opacity-90"><Check className="h-4 w-4" /> {outcome ? "Save completed trade" : "Save as pending trade"}</button>
       </form>
     </AppShell>
   );
 }
 
 function ImageUpload({ label, helper, image, inputRef, onPick, onRemove }: { label: string; helper: string; image: string | null; inputRef: React.RefObject<HTMLInputElement | null>; onPick: (file: File | undefined) => void; onRemove: () => void }) {
-  return <div><span className={labelClass}>{label}</span><input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPick(e.target.files?.[0])} />{image ? <div className="space-y-3"><img src={image} alt={`${label} preview`} className="aspect-[4/3] w-full rounded-xl border border-border object-cover" /><button type="button" onClick={onRemove} className="text-xs text-muted-foreground hover:text-foreground">Remove image</button></div> : <button type="button" onClick={() => inputRef.current?.click()} className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-panel/60 px-4 text-center transition-colors hover:border-primary/50"><ImagePlus className="h-6 w-6 text-muted-foreground" /><span className="text-sm">Drop or select an image</span><span className="text-xs text-muted-foreground">{helper}</span></button>}</div>;
+  return <div><span className={formLabelClass}>{label}</span><input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPick(e.target.files?.[0])} />{image ? <div className="space-y-3"><img src={image} alt={`${label} preview`} className="aspect-[4/3] w-full rounded-xl border border-border object-cover" /><button type="button" onClick={onRemove} className="text-xs text-muted-foreground hover:text-foreground">Remove image</button></div> : <button type="button" onClick={() => inputRef.current?.click()} className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-panel/60 px-4 text-center transition-colors hover:border-primary/50"><ImagePlus className="h-6 w-6 text-muted-foreground" /><span className="text-sm">Drop or select an image</span><span className="text-xs text-muted-foreground">{helper}</span></button>}</div>;
 }
 
 function Choice({ active, onClick, children, tone = "primary" }: { active: boolean; onClick: () => void; children: React.ReactNode; tone?: "primary" | "win" | "loss" | "neutral" }) {

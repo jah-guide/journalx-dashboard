@@ -1,25 +1,50 @@
-# JournalX
+# JournalX — product analysis & trading journal prototype
 
-JournalX is a dark, focused trading journal for reviewing ideas, logging executions, and learning from performance without tracking money. Results are measured in risk-to-reward and R only.
+**Portfolio context:** Systems Analyst showcase for [jah-guide](https://github.com/jah-guide) — requirements and traceability first, then a runnable UI that validates the rules.
 
-## What it includes
+## Problem
 
-- **Dashboard** — total R, win rate, best session, cumulative performance, recent trades, and pair/session breakdowns.
-- **Journal** — a today-first workspace for pair-specific market markups, analysis, and multiple chart uploads. Previous markups are preserved as a read-only accountability record, with append-only updates.
-- **Add Trade** — one trade has a before and after stage: plan the idea, attach a before chart, then record the result and an optional after chart.
-- **Trade History** — searchable trade records with filters for pair, session, outcome, setup, date range, and review status.
-- **Analytics** — results by pair, session, and setup; planned versus achieved reward; plan adherence; and small-sample guidance.
+Traders often **mix P&amp;L vanity metrics with process review**. Dollar balances and win-rate screenshots replace a durable record of what was planned, what was executed, and what was learned. Plans get rewritten after the fact; pre-session chart markup is lost; “edge” by session or setup never surfaces.
 
-## Product principles
+JournalX addresses the **process gap**, not broker execution.
 
-- No money, balances, or profit-currency fields.
-- Planned risk-to-reward and achieved R are separate so intent can be compared with execution.
-- Journal entries and their updates are not edited or deleted after saving, preserving a truthful record for review.
-- The current version is frontend-only and uses local sample data.
+## Stakeholders and outcomes
 
-## Run locally
+| Stakeholder | Outcome |
+|-------------|---------|
+| Independent trader | Plan in R, log results in R, review without currency noise |
+| Analyst / owner | End-to-end spec pack with traceability to the demo |
+| Future engineer | Stable entities (`Trade`, `Markup`, `Session`) for a private backend |
 
-You need Node.js and npm installed.
+Personas, RACI, and communication notes: [docs/02-stakeholders-raci.md](./docs/02-stakeholders-raci.md)
+
+## Product principles (constraints)
+
+1. **No money fields** — no balances, lot size, commission, or profit in currency (see FR-024, BR-01).
+2. **Planned vs achieved R** — planned risk-to-reward (e.g. `1:3`) is separate from achieved R (+2.4R, −1R, 0) so intent compares to execution.
+3. **Append-only journal** — markup bodies are not edited or deleted; observations are **appended** as updates for accountability.
+
+Full business context: [docs/01-context.md](./docs/01-context.md)
+
+## Analysis artifacts (`docs/`)
+
+| Document | Contents |
+|----------|----------|
+| [01-context.md](./docs/01-context.md) | Problem, scope, assumptions, success measures |
+| [02-stakeholders-raci.md](./docs/02-stakeholders-raci.md) | Stakeholders, personas, RACI |
+| [03-requirements.md](./docs/03-requirements.md) | Functional & non-functional requirements (IDs) |
+| [04-use-cases-stories.md](./docs/04-use-cases-stories.md) | Use cases, user stories, acceptance criteria |
+| [05-process-as-is-to-be.md](./docs/05-process-as-is-to-be.md) | Mermaid: legacy journaling vs JournalX flow |
+| [06-data-model.md](./docs/06-data-model.md) | ERD: Trade, Markup, Pair, Session, Setup |
+| [07-sequence-flows.md](./docs/07-sequence-flows.md) | Plan → execute → review; append-only markup |
+| [08-traceability-matrix.md](./docs/08-traceability-matrix.md) | Requirement → design → code → tests |
+| [09-acceptance-tests.md](./docs/09-acceptance-tests.md) | Manual acceptance checklist |
+
+## Working demo (prototype validation)
+
+The React app implements the UX and business rules against **sample data**. It proves navigation, validation, R-based analytics, and append-only journal behavior—not production persistence.
+
+**Run locally** (Node.js and npm):
 
 ```bash
 git clone https://github.com/jah-guide/journalx-dashboard.git
@@ -28,24 +53,36 @@ npm install
 npm run dev
 ```
 
-Open the local address shown by Vite in your browser.
+Open the URL Vite prints (typically `http://localhost:5173`).
 
-## Build
+**Build:**
 
 ```bash
 npm run build
 ```
 
-## Roadmap
+### What the demo covers
 
-- Persist trades, markups, images, and append-only updates in a private backend.
-- Link a trade directly to the markup that informed it.
-- Add optional Discord publishing for saved markups and trade ideas.
-- Add personal accounts when JournalX is ready to support more traders.
+- **Dashboard** — period-filtered R, win rate, cumulative curve, session/pair breakdowns
+- **Journal** — today-first markups, search/filter, append-only updates
+- **Add trade** — two-stage plan / complete flow with validation
+- **Trade history** — multi-filter search and trade detail
+- **Analytics** — planned vs achieved R, plan adherence, breakdowns by pair/session/setup
 
-## Built with
+### Current limitation (stated honestly)
 
-- React and TypeScript
+| Area | Behavior in v0 |
+|------|----------------|
+| Trade history & analytics | Read from **seed data** in `src/lib/trades.ts` |
+| Add trade | Validates and confirms via toast; **does not persist** new rows to history after refresh |
+| Journal markups | New markups and updates live in **browser session state** until refresh |
+
+These gaps are tracked as NFR-004 in [docs/03-requirements.md](./docs/03-requirements.md) and AT-103 in [docs/09-acceptance-tests.md](./docs/09-acceptance-tests.md). Roadmap: private backend, image storage, optional trade↔markup link, Discord publishing.
+
+## Tech stack (validation only)
+
+- Vite, React, TypeScript
 - TanStack Start / Router
 - Tailwind CSS
-- Vite
+
+Stack choice supports fast iteration on forms, filters, and charts while requirements remain the source of truth.

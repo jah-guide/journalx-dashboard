@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { LayoutDashboard, PlusCircle, History, BarChart3, NotebookPen } from "lucide-react";
 import type { ReactNode } from "react";
+import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -34,11 +35,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="mt-auto rounded-lg border border-border/60 bg-panel/50 px-3 py-3">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Prototype
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground/90">Local sample data · R-only journal</p>
+        <div className="mt-auto space-y-3">
+          <KeyboardShortcutsDialog />
+          <div className="rounded-lg border border-border/60 bg-panel/50 px-3 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Prototype
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/90">
+              Sample trades · markups persist locally
+            </p>
+          </div>
         </div>
       </aside>
 

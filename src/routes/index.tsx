@@ -13,6 +13,9 @@ import {
   StatRow,
   formInputClass,
 } from "@/components/ui-kit";
+import { PlanAdherenceCallout } from "@/components/PlanAdherenceCallout";
+import { PeriodDeltaBadge } from "@/components/PeriodDeltaBadge";
+import { periodDeltaR, tradesForPeriod, type PeriodKey } from "@/lib/period-compare";
 import { cumulative, fmtDate, groupBy, stats, trades } from "@/lib/trades";
 import { ArrowUpRight } from "lucide-react";
 
@@ -36,14 +39,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const [period, setPeriod] = useState<"7" | "30" | "all">("30");
-  const visibleTrades = useMemo(() => {
-    if (period === "all") return trades;
-    const latest = new Date(`${trades[0]?.date}T00:00:00`);
-    const start = new Date(latest);
-    start.setDate(start.getDate() - Number(period) + 1);
-    return trades.filter((trade) => new Date(`${trade.date}T00:00:00`) >= start);
-  }, [period]);
+  const [period, setPeriod] = useState<PeriodKey>("30");
+  const visibleTrades = useMemo(() => tradesForPeriod(period), [period]);
+  const delta = useMemo(() => periodDeltaR(period), [period]);
   const s = stats(visibleTrades);
   const bySession = groupBy("session", visibleTrades);
   const byPair = groupBy("pair", visibleTrades).slice(0, 5);
@@ -84,6 +82,8 @@ function Dashboard() {
         }
       />
 
+      <PlanAdherenceCallout list={visibleTrades} className="mb-6 border-primary/20" />
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric
           label="Total R"
@@ -111,6 +111,16 @@ function Dashboard() {
           }
         />
       </div>
+
+      {period !== "all" ? (
+        <div className="mt-4">
+          <PeriodDeltaBadge
+            deltaR={delta.deltaR}
+            priorCount={delta.priorCount}
+            periodDays={Number(period)}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Panel className="xl:col-span-2">

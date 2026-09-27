@@ -4,6 +4,7 @@ import { Check, ImagePlus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PageHeader, Panel, formInputClass, formLabelClass } from "@/components/ui-kit";
+import { topSetups } from "@/lib/setup-suggestions";
 import { OUTCOMES, PAIRS, SESSIONS, type Outcome, type Session } from "@/lib/trades";
 import { cn } from "@/lib/utils";
 
@@ -88,7 +89,28 @@ function AddTrade() {
                 <div><span className={formLabelClass}>Session</span><div className="grid grid-cols-3 gap-2">{SESSIONS.map((item) => <Choice key={item} active={session === item} onClick={() => setSession(item)}>{item}</Choice>)}</div></div>
                 <div><label className={formLabelClass} htmlFor="planned-reward">Planned risk-to-reward</label><input id="planned-reward" placeholder="e.g. 1:3" value={plannedReward} onChange={(e) => setPlannedReward(e.target.value)} className={formInputClass} /><p className="mt-2 text-xs text-muted-foreground">The reward you planned relative to one unit of risk.</p></div>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2"><div><label className={formLabelClass} htmlFor="setup">Setup / tag <span className="normal-case tracking-normal">(optional)</span></label><input id="setup" placeholder="Liquidity sweep, order block…" value={setup} onChange={(e) => setSetup(e.target.value)} className={formInputClass} /></div></div>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <label className={formLabelClass} htmlFor="setup">Setup / tag <span className="normal-case tracking-normal">(optional)</span></label>
+                  <input id="setup" placeholder="Liquidity sweep, order block…" value={setup} onChange={(e) => setSetup(e.target.value)} className={formInputClass} />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {topSetups().map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => setSetup(name)}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground",
+                          setup === name && "border-primary bg-primary/10 text-primary",
+                        )}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">Quick picks from sample history — free text still allowed.</p>
+                </div>
+              </div>
               <div><label className={formLabelClass} htmlFor="plan-notes">Trade thesis <span className="normal-case tracking-normal">(optional)</span></label><textarea id="plan-notes" rows={4} placeholder="What has to happen for this trade to be valid?" value={planNotes} onChange={(e) => setPlanNotes(e.target.value)} className={cn(formInputClass, "resize-y")} /></div>
             </div>
             <ImageUpload label="Before chart" helper="Optional chart at entry or pending order" image={beforeShot} inputRef={beforeFileRef} onPick={(file) => pickImage(file, setBeforeShot)} onRemove={() => setBeforeShot(null)} />

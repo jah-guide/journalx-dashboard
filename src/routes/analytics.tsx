@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { PlanAdherenceCallout } from "@/components/PlanAdherenceCallout";
 import { EquityChart } from "@/components/EquityChart";
 import { Bar, Metric, PageHeader, Panel, RValue, SectionTitle } from "@/components/ui-kit";
 import { cumulative, groupBy, stats, trades } from "@/lib/trades";
@@ -30,6 +31,7 @@ function Analytics() {
   const bySetup = groupBy("setup");
   const planAdherence = (trades.filter((trade) => trade.followedPlan).length / trades.length) * 100;
   const averagePlannedReward = trades.reduce((sum, trade) => sum + Number(trade.plannedReward.split(":")[1]), 0) / trades.length;
+  const recentDeviations = trades.filter((trade) => !trade.followedPlan).slice(0, 4);
 
   return (
     <AppShell>
@@ -37,6 +39,8 @@ function Analytics() {
         title="Analytics"
         description="Planned vs achieved R, adherence, and breakdowns by session, pair, and setup."
       />
+
+      <PlanAdherenceCallout className="mb-6" />
 
       {trades.length < 12 ? (
         <Panel variant="flat" className="mb-6 border-primary/25 bg-primary/5">
@@ -97,10 +101,44 @@ function Analytics() {
         </Panel>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <Panel>
           <SectionTitle>By setup</SectionTitle>
           <BreakdownTable rows={bySetup} />
+        </Panel>
+        <Panel>
+          <SectionTitle
+            action={
+              <Link
+                to="/history"
+                search={{ plan: "deviated" }}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                View all deviations
+              </Link>
+            }
+          >
+            Recent plan deviations
+          </SectionTitle>
+          {recentDeviations.length ? (
+            <ul className="space-y-3">
+              {recentDeviations.map((trade) => (
+                <li key={trade.id}>
+                  <Link
+                    to="/history"
+                    search={{ trade: trade.id }}
+                    className="block rounded-lg border border-border/70 px-3 py-2.5 text-sm transition-colors hover:bg-accent/40"
+                  >
+                    <span className="font-medium">{trade.pair}</span>
+                    <span className="text-muted-foreground"> · {trade.setup}</span>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{trade.reviewNotes}</p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">No deviations in the sample log.</p>
+          )}
         </Panel>
       </div>
     </AppShell>

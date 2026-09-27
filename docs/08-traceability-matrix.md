@@ -16,6 +16,17 @@ Legend: ✅ implemented in demo · ⚠ partial · ○ not yet (documented gap)
 | FR-002 | UC-01 | 07 SF-04 | `EquityChart`, `cumulative()` | AT-002 |
 | FR-003 | UC-01 | 06 ERD | `groupBy("session"\|"pair")` on dashboard | AT-003 |
 | FR-004 | UC-01 | — | Recent trades list on dashboard | AT-004 |
+| FR-005 | UC-01 | — | `period-compare.ts`, `PeriodDeltaBadge` | AT-005 |
+| FR-014 | UC-02 | 06 Markup | `sample-storage.ts`, `usePersistedMarkups` | AT-014 |
+| FR-015 | UC-02 | — | Tag chips, reset sample markups | AT-016 |
+| FR-033 | UC-06 | — | `export-trades.ts`, history export | AT-033 |
+| FR-034 | UC-06/07 | — | History plan filter + search param | AT-034 |
+| FR-035 | UC-06 | — | `QuickFilterChips`, `FilterSummaryPills` | AT-035 |
+| FR-036 | UC-06 | — | `EmptyState` | AT-036 |
+| FR-037 | UC-06 | — | `CopyTradeLink` | AT-037 |
+| FR-045 | UC-01/07 | — | `PlanAdherenceCallout` | AT-006 |
+| FR-046 | UC-07 | — | Analytics deviations panel | AT-045 |
+| FR-047 | UC-04 | — | `setup-suggestions.ts`, add-trade chips | AT-025 |
 | FR-010 | UC-02, US-02 | 06 Markup | `src/routes/journal.tsx` composer | AT-010 |
 | FR-011 | UC-02 | 06 Markup | Filters + search in journal | AT-011 |
 | FR-012 | UC-03, US-03 | 07 SF-03 | `saveUpdate()` append to `updates[]` | AT-012 |
@@ -45,7 +56,9 @@ Legend: ✅ implemented in demo · ⚠ partial · ○ not yet (documented gap)
 | NFR-001 | Manual navigation | `AppShell` nav links | AT-100 |
 | NFR-002 | Form submit errors | `add-trade.tsx` toasts | AT-101 |
 | NFR-003 | UI inspection | Journal: append only | AT-102 |
-| NFR-004 | README + this matrix | Seed trades; journal session state; add-trade no persist | AT-103 |
+| NFR-004 | README + this matrix | Seed trades; markups in localStorage; add-trade no persist | AT-103 |
+| NFR-010 | Storage inspection | `journalx:markups:v1` | AT-014 |
+| NFR-011 | Keyboard smoke | `use-keyboard-shortcuts`, dialog | AT-108 |
 | NFR-005 | Manual smoke | ~24 seed trades | AT-104 |
 | NFR-006 | Spot check aria | History filters, pair search | AT-105 |
 | NFR-007 | Code review | `src/lib/trades.ts`, `journal.ts` | AT-106 |
@@ -69,7 +82,7 @@ Legend: ✅ implemented in demo · ⚠ partial · ○ not yet (documented gap)
 |------|--------|---------|
 | Persist new trades from Add trade | ⚠ | Backend / local storage phase |
 | Link trade → originating markup | ○ | Roadmap in README |
-| Immutable markup across browser refresh | ⚠ | Journal uses in-memory state only |
+| Immutable markup across browser refresh | ✅ | Markups persist via localStorage (append-only) |
 | Multi-user / auth | ○ | Out of scope v0 |
 
 ---

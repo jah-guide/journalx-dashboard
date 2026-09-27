@@ -25,8 +25,9 @@ That gap makes it hard to answer: *“Am I improving my process, or just getting
 | Dashboard | Aggregate R, win rate, session/pair breakdowns, recent trades, period filter |
 | Journal | Pair-specific markups with tags, images, search/filter, append-only updates |
 | Add trade | Two-stage flow: plan (before) → complete (after) with validation |
-| Trade history | Search and multi-filter list with trade detail |
-| Analytics | Grouped stats, planned vs achieved R, plan adherence, cumulative R curve |
+| Trade history | Multi-filter search, session/setup chips, plan adherence, JSON export, trade detail + share link |
+| Analytics | Planned vs achieved R, adherence callouts, deviation review links, cumulative R curve |
+| Journal persistence | Markups and appends stored in browser localStorage (prototype) |
 
 ## Out of scope (explicit non-goals for v0)
 

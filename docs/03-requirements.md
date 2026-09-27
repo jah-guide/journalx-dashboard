@@ -14,6 +14,7 @@ Catalogue **functional requirements (FR)** and **non-functional requirements (NF
 | FR-002 | The system shall show cumulative R over time for the selected period. | Must |
 | FR-003 | The system shall rank performance by **session** and **pair** (at least top pairs). | Must |
 | FR-004 | The system shall list recent trades with pair, outcome, and achieved R. | Must |
+| FR-005 | For 7- and 30-day periods, the dashboard shall show **R delta vs the prior window** of equal length. | Should |
 
 ### Journal (markups)
 
@@ -23,6 +24,8 @@ Catalogue **functional requirements (FR)** and **non-functional requirements (NF
 | FR-011 | Saved markups shall appear in a searchable, filterable history (by pair, date, text). | Must |
 | FR-012 | The user shall **append** an update (text and/or images) to an existing markup; original markup content shall not be editable. | Must |
 | FR-013 | The journal view shall emphasize **today-first** composition before browsing history. | Should |
+| FR-014 | Markups created or appended in the prototype shall **persist in browser localStorage** (seed remains fallback when empty). | Should |
+| FR-015 | The journal shall offer **reset to sample markups** and filter by markup **tag type** via quick chips. | Should |
 
 ### Trades — plan and execute
 
@@ -41,6 +44,11 @@ Catalogue **functional requirements (FR)** and **non-functional requirements (NF
 | FR-030 | The user shall search and filter trades by text, pair, session, outcome, setup, date range, and review completeness (before/after charts). | Must |
 | FR-031 | The user shall open a trade detail view showing plan notes, review notes, planned R:R, achieved R, and screenshots. | Must |
 | FR-032 | Filtered lists shall show summary stats for the current filter set. | Should |
+| FR-033 | The user shall **export the current filtered trade list** as JSON (R fields only; no currency). | Should |
+| FR-034 | The user shall filter by **plan adherence** (followed vs deviated) with deep links from dashboard/analytics. | Should |
+| FR-035 | Trade history shall expose **session and setup quick-filter chips** plus an active-filter summary. | Should |
+| FR-036 | Empty filter results shall show actionable **empty states**. | Should |
+| FR-037 | Trade detail shall offer **copy link** to reopen the same trade via URL. | Could |
 
 ### Analytics
 
@@ -51,6 +59,9 @@ Catalogue **functional requirements (FR)** and **non-functional requirements (NF
 | FR-042 | The system shall compute **plan adherence** (% of trades marked as following the plan). | Must |
 | FR-043 | The system shall break down results by pair, session, and setup with win rate and total R. | Must |
 | FR-044 | The system shall display guidance when sample size is small (low statistical confidence). | Should |
+| FR-045 | Dashboard and analytics shall surface **plan adherence callouts** linking to deviation review. | Should |
+| FR-046 | Analytics shall list **recent plan deviations** with links to trade detail. | Could |
+| FR-047 | Add-trade shall suggest **setup tags** from sample history as quick picks (free text remains). | Could |
 
 ### Reference data
 
@@ -72,6 +83,8 @@ Catalogue **functional requirements (FR)** and **non-functional requirements (NF
 | NFR-007 | Maintainability | Domain types (`Trade`, `Markup`, `Session`) shall live in shared modules for future API parity. | Should |
 | NFR-008 | Privacy | No third-party analytics requiring PII in the trading journal prototype. | Should |
 | NFR-009 | Portability | App shall run locally via `npm install && npm run dev` on Node LTS. | Must |
+| NFR-010 | Persistence | Browser localStorage may hold markup arrays only; trade seed stays in source until backend. | Should |
+| NFR-011 | Usability | Keyboard shortcuts: help (`?`), search focus (`/`), export (`Ctrl+E` on history), dismiss (`Esc`). | Should |
 
 ## Constraints (business rules)
 

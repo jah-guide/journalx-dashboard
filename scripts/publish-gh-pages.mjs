@@ -1,4 +1,4 @@
-import { cpSync, emptyDirSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,7 +26,8 @@ const indexHtml = readFileSync(path.join(outDir, "index.html"));
 writeFileSync(path.join(outDir, "404.html"), indexHtml);
 
 const workDir = path.join(root, ".gh-pages-publish");
-emptyDirSync(workDir);
+rmSync(workDir, { recursive: true, force: true });
+mkdirSync(workDir, { recursive: true });
 cpSync(outDir, workDir, { recursive: true });
 
 run("git init", { cwd: workDir });

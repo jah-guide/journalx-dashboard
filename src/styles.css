@@ -40,41 +40,42 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: oklch(0.16 0.004 260);
-  --foreground: oklch(0.95 0.004 260);
-  --card: oklch(0.2 0.005 260);
-  --card-foreground: oklch(0.95 0.004 260);
-  --panel: oklch(0.23 0.005 260);
-  --popover: oklch(0.2 0.005 260);
-  --popover-foreground: oklch(0.95 0.004 260);
-  --primary: oklch(0.86 0.21 128);
-  --primary-foreground: oklch(0.18 0.02 128);
-  --secondary: oklch(0.26 0.005 260);
-  --secondary-foreground: oklch(0.95 0.004 260);
-  --muted: oklch(0.24 0.005 260);
-  --muted-foreground: oklch(0.68 0.008 260);
-  --accent: oklch(0.28 0.006 260);
-  --accent-foreground: oklch(0.95 0.004 260);
-  --destructive: oklch(0.6 0.2 22);
-  --destructive-foreground: oklch(0.97 0.004 260);
-  --win: oklch(0.86 0.21 128);
-  --loss: oklch(0.65 0.19 22);
-  --neutral: oklch(0.75 0.03 260);
-  --border: oklch(0.3 0.005 260);
-  --input: oklch(0.3 0.005 260);
-  --ring: oklch(0.86 0.21 128);
-  --chart-1: oklch(0.86 0.21 128);
-  --chart-2: oklch(0.7 0.11 200);
-  --chart-3: oklch(0.65 0.19 22);
-  --chart-4: oklch(0.8 0.13 85);
-  --chart-5: oklch(0.7 0.09 300);
+  --radius: 0.625rem;
+  --background: oklch(0.13 0.012 240);
+  --foreground: oklch(0.94 0.008 240);
+  --card: oklch(0.17 0.014 240);
+  --card-foreground: oklch(0.94 0.008 240);
+  --panel: oklch(0.19 0.014 240);
+  --popover: oklch(0.17 0.014 240);
+  --popover-foreground: oklch(0.94 0.008 240);
+  --primary: oklch(0.78 0.14 195);
+  --primary-foreground: oklch(0.14 0.02 195);
+  --secondary: oklch(0.22 0.012 240);
+  --secondary-foreground: oklch(0.94 0.008 240);
+  --muted: oklch(0.21 0.012 240);
+  --muted-foreground: oklch(0.62 0.02 240);
+  --accent: oklch(0.24 0.018 240);
+  --accent-foreground: oklch(0.94 0.008 240);
+  --destructive: oklch(0.58 0.2 25);
+  --destructive-foreground: oklch(0.97 0.004 240);
+  --win: oklch(0.76 0.16 155);
+  --loss: oklch(0.62 0.19 25);
+  --neutral: oklch(0.72 0.03 240);
+  --border: oklch(0.28 0.014 240);
+  --input: oklch(0.26 0.014 240);
+  --ring: oklch(0.78 0.14 195);
+  --chart-1: oklch(0.78 0.14 195);
+  --chart-2: oklch(0.68 0.1 220);
+  --chart-3: oklch(0.62 0.19 25);
+  --chart-4: oklch(0.76 0.16 155);
+  --chart-5: oklch(0.7 0.08 85);
+  --shell-glow: oklch(0.78 0.14 195 / 0.06);
 }
 
 @layer base {
@@ -84,8 +85,12 @@
 
   body {
     background-color: var(--color-background);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, var(--shell-glow), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 100%, oklch(0.2 0.02 240 / 0.4), transparent);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01";
     -webkit-font-smoothing: antialiased;
   }
 
@@ -94,17 +99,36 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
+    font-weight: 600;
   }
 }
 
 @utility panel {
-  background-color: var(--color-card);
-  border: 1px solid var(--color-border);
+  background-color: color-mix(in oklch, var(--color-card) 92%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-border) 85%, transparent);
   border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.04) inset,
+    0 12px 40px -24px oklch(0 0 0 / 0.55);
+}
+
+@utility panel-flat {
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
 @utility num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@utility label-caps {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
 }

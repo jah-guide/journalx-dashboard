@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { OutcomeBadge, Panel, RValue } from "@/components/ui-kit";
+import { OutcomeBadge, PageHeader, Panel, RValue, formInputClass } from "@/components/ui-kit";
 import {
   OUTCOMES,
   PAIRS,
@@ -38,8 +38,7 @@ export const Route = createFileRoute("/history")({
   component: HistoryPage,
 });
 
-const selectClass =
-  "rounded-lg border border-input bg-panel px-3 py-2 text-sm text-foreground outline-none focus:border-primary/60";
+const selectClass = formInputClass;
 
 function HistoryPage() {
   const navigate = useNavigate();
@@ -82,13 +81,19 @@ function HistoryPage() {
 
   return (
     <AppShell>
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Trade history</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {filtered.length} trades · {s.totalR > 0 ? "+" : ""}
-          {s.totalR.toFixed(1)}R · {s.winRate.toFixed(0)}% win rate
-        </p>
-      </header>
+      <PageHeader
+        title="Trade history"
+        description={
+          <>
+            {filtered.length} trades ·{" "}
+            <span className="num">
+              {s.totalR > 0 ? "+" : ""}
+              {s.totalR.toFixed(1)}R
+            </span>{" "}
+            · {s.winRate.toFixed(0)}% win rate
+          </>
+        }
+      />
 
       <Panel className="mb-6">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -256,7 +261,7 @@ function HistoryPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-t-2xl border border-border bg-card p-5 sm:rounded-2xl"
+            className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-t-2xl border border-border bg-card p-5 shadow-2xl sm:rounded-2xl"
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div className="min-w-0">

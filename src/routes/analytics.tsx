@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { EquityChart } from "@/components/EquityChart";
-import { Bar, Metric, Panel, RValue, SectionTitle } from "@/components/ui-kit";
+import { Bar, Metric, PageHeader, Panel, RValue, SectionTitle } from "@/components/ui-kit";
 import { cumulative, groupBy, stats, trades } from "@/lib/trades";
 
 export const Route = createFileRoute("/analytics")({
@@ -33,12 +33,19 @@ function Analytics() {
 
   return (
     <AppShell>
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Analytics</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Where your R actually comes from.
-        </p>
-      </header>
+      <PageHeader
+        title="Analytics"
+        description="Planned vs achieved R, adherence, and breakdowns by session, pair, and setup."
+      />
+
+      {trades.length < 12 ? (
+        <Panel variant="flat" className="mb-6 border-primary/25 bg-primary/5">
+          <p className="text-sm text-foreground/90">
+            <span className="font-medium text-primary">Small sample.</span> With fewer than 12 trades,
+            treat breakdowns as directional — not statistical edge.
+          </p>
+        </Panel>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Wins" value={`${s.wins}`} tone="positive" hint="Closed in profit" />
@@ -55,12 +62,12 @@ function Analytics() {
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Panel>
           <SectionTitle>Plan adherence</SectionTitle>
-          <p className="text-3xl font-semibold text-primary">{planAdherence.toFixed(0)}%</p>
+          <p className="num text-3xl font-semibold text-primary">{planAdherence.toFixed(0)}%</p>
           <p className="mt-2 text-sm text-muted-foreground">Trades marked as following the original plan.</p>
         </Panel>
         <Panel>
           <SectionTitle>Planned reward</SectionTitle>
-          <p className="text-3xl font-semibold">1:{averagePlannedReward.toFixed(1)}</p>
+          <p className="num text-3xl font-semibold">1:{averagePlannedReward.toFixed(1)}</p>
           <p className="mt-2 text-sm text-muted-foreground">Average target relative to one unit of risk.</p>
         </Panel>
         <Panel>

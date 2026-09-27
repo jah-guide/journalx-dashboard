@@ -1,5 +1,7 @@
 # JournalX — product analysis & trading journal prototype
 
+**Live demo:** [jah-guide.github.io/journalx-dashboard](https://jah-guide.github.io/journalx-dashboard/)
+
 **Portfolio context:** Systems Analyst showcase for [jah-guide](https://github.com/jah-guide) — requirements and traceability first, then a runnable UI that validates the rules.
 
 ## Problem
@@ -62,6 +64,14 @@ Open the URL Vite prints (typically `http://localhost:5173`).
 ```bash
 npm run build
 ```
+
+**GitHub Pages** (static prerender to `dist/client`, publish `gh-pages` branch):
+
+```bash
+npm run publish:gh-pages
+```
+
+Uses `VITE_BASE=/journalx-dashboard/` for asset paths under [GitHub Pages project sites](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#types-of-github-pages-sites).
 
 ### What the demo covers
 

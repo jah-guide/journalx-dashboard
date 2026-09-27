@@ -42,7 +42,9 @@ Full business context: [docs/01-context.md](./docs/01-context.md)
 
 ## Working demo (prototype validation)
 
-The React app implements the UX and business rules against **sample data**. It proves navigation, validation, R-based analytics, and append-only journal behavior—not production persistence.
+The React app implements the UX and business rules against **sample trade data**. Markups persist in **localStorage**; new trades from Add trade remain demo-only until a backend exists.
+
+**UX highlights:** history quick filters, plan-adherence views, filtered JSON export, keyboard shortcuts (`?`, `/`, `Ctrl+E`), dashboard period R delta, setup quick picks on add-trade, and append-only journal polish.
 
 **Run locally** (Node.js and npm):
 
@@ -66,7 +68,7 @@ npm run build
 - **Dashboard** — period-filtered R, win rate, cumulative curve, session/pair breakdowns
 - **Journal** — today-first markups, search/filter, append-only updates
 - **Add trade** — two-stage plan / complete flow with validation
-- **Trade history** — multi-filter search and trade detail
+- **Trade history** — chips, plan-adherence filter, export JSON, copy trade link, trade detail
 - **Analytics** — planned vs achieved R, plan adherence, breakdowns by pair/session/setup
 
 ### Current limitation (stated honestly)

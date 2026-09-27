@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { CalendarDays, ChevronDown, ImagePlus, Search, X } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { EmptyState } from "@/components/EmptyState";
+import { QuickFilterChips } from "@/components/QuickFilterChips";
 import { Panel, PageHeader, SectionTitle, formInputClass, formLabelClass } from "@/components/ui-kit";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { usePersistedMarkups } from "@/hooks/use-persisted-markups";
 import { markups as seededMarkups, type Markup } from "@/lib/journal";
+import { clearStoredMarkups } from "@/lib/sample-storage";
 import { PAIRS } from "@/lib/trades";
 
 export const Route = createFileRoute("/journal")({ component: JournalPage });
@@ -12,7 +18,8 @@ const tags: Markup["tag"][] = ["Premarket", "Session plan", "Observation", "Revi
 
 function JournalPage() {
   const today = new Date().toISOString().slice(0, 10);
-  const [markups, setMarkups] = useState(seededMarkups);
+  const [markups, setMarkups] = usePersistedMarkups(seededMarkups);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [pair, setPair] = useState(PAIRS[0]!);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -22,13 +29,28 @@ function JournalPage() {
   const [query, setQuery] = useState("");
   const [pairFilter, setPairFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [updateBody, setUpdateBody] = useState("");
   const [updateImages, setUpdateImages] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateInputRef = useRef<HTMLInputElement>(null);
   const todayLabel = new Date(`${today}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-  const visibleMarkups = useMemo(() => markups.filter((markup) => (pairFilter === "all" || markup.pair === pairFilter) && (dateFilter === "" || markup.date === dateFilter) && `${markup.pair} ${markup.title} ${markup.body}`.toLowerCase().includes(query.toLowerCase())), [markups, pairFilter, dateFilter, query]);
+  const tagChips = useMemo(
+    () => [{ id: "all", label: "All types" }, ...tags.map((item) => ({ id: item, label: item }))],
+    [],
+  );
+  const visibleMarkups = useMemo(
+    () =>
+      markups.filter(
+        (markup) =>
+          (pairFilter === "all" || markup.pair === pairFilter) &&
+          (dateFilter === "" || markup.date === dateFilter) &&
+          (tagFilter === "all" || markup.tag === tagFilter) &&
+          `${markup.pair} ${markup.title} ${markup.body}`.toLowerCase().includes(query.toLowerCase()),
+      ),
+    [markups, pairFilter, dateFilter, tagFilter, query],
+  );
   const daysWithMarkups = useMemo(() => new Set(markups.map((markup) => markup.date)), [markups]);
 
   const addImages = (files: FileList | null) => {
@@ -43,11 +65,40 @@ function JournalPage() {
     setComposerOpen(false);
   };
 
+  const cancelUpdate = () => {
+    setUpdatingId(null);
+    setUpdateBody("");
+    setUpdateImages([]);
+  };
+
   const saveUpdate = (markupId: string) => {
     if (!updateBody.trim() && updateImages.length === 0) return;
-    setMarkups((current) => current.map((markup) => markup.id === markupId ? { ...markup, updates: [...(markup.updates ?? []), { id: `U-${Date.now()}`, body: updateBody.trim(), images: updateImages, createdAt: new Date().toISOString() }] } : markup));
-    setUpdatingId(null); setUpdateBody(""); setUpdateImages([]);
+    setMarkups((current) =>
+      current.map((markup) =>
+        markup.id === markupId
+          ? {
+              ...markup,
+              updates: [
+                ...(markup.updates ?? []),
+                {
+                  id: `U-${Date.now()}`,
+                  body: updateBody.trim(),
+                  images: updateImages,
+                  createdAt: new Date().toISOString(),
+                },
+              ],
+            }
+          : markup,
+      ),
+    );
+    toast.success("Append saved — original markup unchanged.");
+    cancelUpdate();
   };
+
+  useKeyboardShortcuts([
+    { key: "/", handler: () => searchRef.current?.focus() },
+    { key: "Escape", when: () => updatingId !== null, handler: cancelUpdate },
+  ]);
 
   return <AppShell>
     <PageHeader
@@ -81,10 +132,14 @@ function JournalPage() {
     <section className="mt-8">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-lg font-semibold">Previous markups</h2><p className="mt-1 text-sm text-muted-foreground">A permanent record of your ideas and analysis.</p></div><span className="text-xs text-muted-foreground">{visibleMarkups.length} saved</span></div>
       <Panel>
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">Markup type</p>
+          <QuickFilterChips chips={tagChips} activeId={tagFilter} onSelect={setTagFilter} ariaLabel="Filter by markup type" />
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_180px]">
-          <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search ideas, bias, or levels…" className={`${formInputClass} pl-9`} /></div>
+          <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input ref={searchRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search ideas, bias, or levels… (/ to focus)" aria-label="Search markups" className={`${formInputClass} pl-9`} /></div>
           <select value={pairFilter} onChange={(event) => setPairFilter(event.target.value)} aria-label="Filter markups by pair" className={formInputClass}><option value="all">All pairs</option>{PAIRS.map((item) => <option key={item}>{item}</option>)}</select>
-          <button type="button" onClick={() => { setQuery(""); setPairFilter("all"); setDateFilter(""); }} className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Clear filters</button>
+          <button type="button" onClick={() => { setQuery(""); setPairFilter("all"); setDateFilter(""); setTagFilter("all"); }} className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Clear filters</button>
         </div>
         <div className="mt-6 space-y-4">
           {visibleMarkups.length ? visibleMarkups.map((markup) => <article key={markup.id} className="rounded-xl border border-border/80 bg-panel/50 p-5 shadow-sm transition-colors hover:border-border"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium">{markup.pair} <span className="font-normal text-muted-foreground">— {markup.title}</span></p><p className="mt-1 text-xs text-muted-foreground">{new Date(`${markup.date}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · {markup.tag}</p></div><button type="button" onClick={() => setUpdatingId(updatingId === markup.id ? null : markup.id)} className="rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground">Add update</button></div><p className="mt-3 text-sm leading-relaxed text-foreground/90">{markup.body}</p>{markup.images.length ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{markup.images.map((image, index) => <img key={`${markup.id}-${index}`} src={image} alt={`${markup.pair} markup ${index + 1}`} className="aspect-[4/3] w-full rounded-lg border border-border object-cover" />)}</div> : null}{markup.updates?.map((update) => <div key={update.id} className="mt-4 border-t border-border pt-4"><p className="text-xs uppercase tracking-widest text-primary">Update</p><p className="mt-2 text-sm">{update.body}</p>{update.images.length ? <div className="mt-3 grid grid-cols-2 gap-2">{update.images.map((image) => <img key={image} src={image} alt="Markup update" className="aspect-[4/3] rounded-lg border border-border object-cover" />)}</div> : null}</div>)}{updatingId === markup.id ? <div className="mt-4 border-t border-border pt-4"><textarea value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} rows={3} placeholder="Add an observation or update…" className={`${formInputClass} resize-y`} /><input ref={updateInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(event) => event.target.files && setUpdateImages(Array.from(event.target.files).map((file) => URL.createObjectURL(file)))} /><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => updateInputRef.current?.click()} className="rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:bg-accent">Add charts</button><button type="button" onClick={() => saveUpdate(markup.id)} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">Save update</button></div>{updateImages.length ? <p className="mt-2 text-xs text-muted-foreground">{updateImages.length} new chart{updateImages.length === 1 ? "" : "s"} attached</p> : null}</div> : null}</article>) : <p className="py-10 text-center text-sm text-muted-foreground">No saved markups match these filters.</p>}

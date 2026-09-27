@@ -1,25 +1,33 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { CopyTradeLink } from "@/components/CopyTradeLink";
+import { EmptyState } from "@/components/EmptyState";
+import { FilterSummaryPills } from "@/components/FilterSummaryPills";
+import { QuickFilterChips } from "@/components/QuickFilterChips";
 import { OutcomeBadge, PageHeader, Panel, RValue, formInputClass } from "@/components/ui-kit";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { downloadTradesJson } from "@/lib/export-trades";
 import {
-  OUTCOMES,
-  PAIRS,
-  SESSIONS,
-  fmtDate,
-  stats,
-  trades,
-  type Outcome,
-  type Session,
-} from "@/lib/trades";
+  defaultTradeFilters,
+  filterTrades,
+  filtersAreActive,
+  type TradeFilters,
+} from "@/lib/filter-trades";
+import { OUTCOMES, PAIRS, SESSIONS, fmtDate, stats, trades } from "@/lib/trades";
 import { cn } from "@/lib/utils";
-import { Search, X } from "lucide-react";
+import { Download, FilterX, Search, X } from "lucide-react";
+import { toast } from "sonner";
 
-type SearchParams = { trade?: string | undefined };
+type SearchParams = { trade?: string; plan?: "followed" | "deviated" };
 
 export const Route = createFileRoute("/history")({
   validateSearch: (s: Record<string, unknown>): SearchParams => ({
-    trade: typeof s["trade"] === "string" ? (s["trade"] as string) : undefined,
+    trade: typeof s["trade"] === "string" ? s["trade"] : undefined,
+    plan:
+      s["plan"] === "followed" || s["plan"] === "deviated"
+        ? (s["plan"] as "followed" | "deviated")
+        : undefined,
   }),
   head: () => ({
     meta: [
@@ -42,47 +50,70 @@ const selectClass = formInputClass;
 
 function HistoryPage() {
   const navigate = useNavigate();
-  const { trade: openId } = Route.useSearch();
-  const [q, setQ] = useState("");
-  const [pair, setPair] = useState("all");
-  const [session, setSession] = useState("all");
-  const [outcome, setOutcome] = useState("all");
-  const [setup, setSetup] = useState("all");
-  const [review, setReview] = useState("all");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const setups = useMemo(() => [...new Set(trades.map((trade) => trade.setup))].sort(), []);
+  const { trade: openId, plan: planFromUrl } = Route.useSearch();
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [filters, setFilters] = useState<TradeFilters>({
+    ...defaultTradeFilters,
+    plan: planFromUrl ?? "all",
+  });
 
-  const filtered = useMemo(
-    () =>
-      trades.filter((t) => {
-        const text = `${t.pair} ${t.setup} ${t.notes}`.toLowerCase();
-        return (
-          (q === "" || text.includes(q.toLowerCase())) &&
-          (pair === "all" || t.pair === pair) &&
-          (session === "all" || t.session === (session as Session)) &&
-          (outcome === "all" || t.outcome === (outcome as Outcome)) &&
-          (setup === "all" || t.setup === setup) &&
-          (review === "all" || (review === "complete" ? Boolean(t.afterScreenshot) : !t.afterScreenshot)) &&
-          (from === "" || t.date >= from) &&
-          (to === "" || t.date <= to)
-        );
-      }),
-    [q, pair, session, outcome, setup, review, from, to],
+  const patch = (partial: Partial<TradeFilters>) =>
+    setFilters((current) => ({ ...current, ...partial }));
+
+  const setups = useMemo(() => [...new Set(trades.map((trade) => trade.setup))].sort(), []);
+  const topSetups = useMemo(() => setups.slice(0, 4), [setups]);
+
+  const sessionChips = useMemo(
+    () => [{ id: "all", label: "All sessions" }, ...SESSIONS.map((name) => ({ id: name, label: name }))],
+    [],
   );
 
+  const setupChips = useMemo(
+    () => [{ id: "all", label: "All setups" }, ...topSetups.map((name) => ({ id: name, label: name }))],
+    [topSetups],
+  );
+
+  const filtered = useMemo(() => filterTrades(trades, filters), [filters]);
+  const activeFilters = filtersAreActive(filters);
+
   const clearFilters = () => {
-    setQ(""); setPair("all"); setSession("all"); setOutcome("all"); setSetup("all"); setReview("all"); setFrom(""); setTo("");
+    setFilters(defaultTradeFilters);
+    navigate({ to: "/history", search: {} });
+  };
+
+  const exportFiltered = () => {
+    downloadTradesJson(filtered);
+    toast.success(`Exported ${filtered.length} trade${filtered.length === 1 ? "" : "s"} as JSON.`);
   };
 
   const s = stats(filtered);
   const active = trades.find((t) => t.id === openId) ?? null;
-  const close = () => navigate({ to: "/history", search: {} });
+  const close = () =>
+    navigate({
+      to: "/history",
+      search: filters.plan !== "all" ? { plan: filters.plan } : {},
+    });
+
+  useKeyboardShortcuts([
+    { key: "/", handler: () => searchRef.current?.focus() },
+    { key: "Escape", when: () => Boolean(openId), handler: close },
+    { key: "e", mod: true, handler: exportFiltered },
+  ]);
 
   return (
     <AppShell>
       <PageHeader
         title="Trade history"
+        action={
+          <button
+            type="button"
+            onClick={exportFiltered}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-panel px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Download className="h-4 w-4" />
+            Export JSON
+          </button>
+        }
         description={
           <>
             {filtered.length} trades ·{" "}
@@ -90,19 +121,44 @@ function HistoryPage() {
               {s.totalR > 0 ? "+" : ""}
               {s.totalR.toFixed(1)}R
             </span>{" "}
-            · {s.winRate.toFixed(0)}% win rate
+            · {s.winRate.toFixed(0)}% win rate · {s.wins}W / {s.losses}L / {s.breakevens}BE
+            {filters.plan === "deviated" ? " · deviations only" : null}
           </>
         }
       />
 
-      <Panel className="mb-6">
+      <Panel className="mb-6 space-y-4">
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Session
+          </p>
+          <QuickFilterChips
+            chips={sessionChips}
+            activeId={filters.session}
+            onSelect={(id) => patch({ session: id })}
+            ariaLabel="Filter by session"
+          />
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Setup
+          </p>
+          <QuickFilterChips
+            chips={setupChips}
+            activeId={filters.setup}
+            onSelect={(id) => patch({ setup: id })}
+            ariaLabel="Filter by setup"
+          />
+        </div>
+        <FilterSummaryPills filters={filters} />
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className="relative sm:col-span-2 xl:col-span-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search pair, setup, notes…"
+              ref={searchRef}
+              value={filters.q}
+              onChange={(e) => patch({ q: e.target.value })}
+              placeholder="Search pair, setup, notes… (/ to focus)"
               aria-label="Search trades"
               className="w-full rounded-lg border border-input bg-panel py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/60"
             />
@@ -110,8 +166,8 @@ function HistoryPage() {
           <select
             aria-label="Filter by pair"
             className={selectClass}
-            value={pair}
-            onChange={(e) => setPair(e.target.value)}
+            value={filters.pair}
+            onChange={(e) => patch({ pair: e.target.value })}
           >
             <option value="all">All pairs</option>
             {PAIRS.map((p) => (
@@ -123,8 +179,8 @@ function HistoryPage() {
           <select
             aria-label="Filter by session"
             className={selectClass}
-            value={session}
-            onChange={(e) => setSession(e.target.value)}
+            value={filters.session}
+            onChange={(e) => patch({ session: e.target.value })}
           >
             <option value="all">All sessions</option>
             {SESSIONS.map((p) => (
@@ -136,8 +192,8 @@ function HistoryPage() {
           <select
             aria-label="Filter by outcome"
             className={selectClass}
-            value={outcome}
-            onChange={(e) => setOutcome(e.target.value)}
+            value={filters.outcome}
+            onChange={(e) => patch({ outcome: e.target.value })}
           >
             <option value="all">All outcomes</option>
             {OUTCOMES.map((p) => (
@@ -149,27 +205,64 @@ function HistoryPage() {
           <input
             type="date"
             aria-label="From date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            value={filters.from}
+            onChange={(e) => patch({ from: e.target.value })}
             className={cn(selectClass, "num")}
           />
           <input
             type="date"
             aria-label="To date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
+            value={filters.to}
+            onChange={(e) => patch({ to: e.target.value })}
             className={cn(selectClass, "num")}
           />
-          <select aria-label="Filter by setup" className={selectClass} value={setup} onChange={(e) => setSetup(e.target.value)}>
+          <select
+            aria-label="Filter by setup"
+            className={selectClass}
+            value={filters.setup}
+            onChange={(e) => patch({ setup: e.target.value })}
+          >
             <option value="all">All setups</option>
-            {setups.map((item) => <option key={item} value={item}>{item}</option>)}
+            {setups.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
-          <select aria-label="Filter by review status" className={selectClass} value={review} onChange={(e) => setReview(e.target.value)}>
+          <select
+            aria-label="Filter by review status"
+            className={selectClass}
+            value={filters.review}
+            onChange={(e) => patch({ review: e.target.value })}
+          >
             <option value="all">All reviews</option>
             <option value="complete">Review complete</option>
             <option value="pending">Needs review</option>
           </select>
-          <button type="button" onClick={clearFilters} className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <select
+            aria-label="Filter by plan adherence"
+            className={selectClass}
+            value={filters.plan}
+            onChange={(e) => {
+              const value = e.target.value as TradeFilters["plan"];
+              patch({ plan: value });
+              navigate({
+                to: "/history",
+                search: value === "all" ? {} : { plan: value },
+              });
+            }}
+          >
+            <option value="all">All plan adherence</option>
+            <option value="followed">Followed plan</option>
+            <option value="deviated">Deviated from plan</option>
+          </select>
+          <button
+            type="button"
+            disabled={!activeFilters}
+            onClick={clearFilters}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <FilterX className="h-4 w-4" />
             Clear filters
           </button>
         </div>
@@ -192,7 +285,12 @@ function HistoryPage() {
             {filtered.map((t) => (
               <tr
                 key={t.id}
-                onClick={() => navigate({ to: "/history", search: { trade: t.id } })}
+                onClick={() =>
+                  navigate({
+                    to: "/history",
+                    search: { trade: t.id, ...(filters.plan !== "all" ? { plan: filters.plan } : {}) },
+                  })
+                }
                 className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40"
               >
                 <td className="num px-5 py-3 text-muted-foreground">{fmtDate(t.date)}</td>
@@ -211,9 +309,22 @@ function HistoryPage() {
           </tbody>
         </table>
         {filtered.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            No trades match these filters.
-          </p>
+          <EmptyState
+            className="mx-5 mb-5 border-none bg-transparent"
+            title="No trades match"
+            description="Widen filters or reset to browse the full sample log."
+            action={
+              activeFilters ? (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+                >
+                  Reset filters
+                </button>
+              ) : null
+            }
+          />
         ) : null}
       </div>
 
@@ -221,7 +332,12 @@ function HistoryPage() {
         {filtered.map((t) => (
           <li key={t.id}>
             <button
-              onClick={() => navigate({ to: "/history", search: { trade: t.id } })}
+              onClick={() =>
+                navigate({
+                  to: "/history",
+                  search: { trade: t.id, ...(filters.plan !== "all" ? { plan: filters.plan } : {}) },
+                })
+              }
               className="panel flex w-full items-center gap-3 p-3 text-left"
             >
               <img
@@ -246,8 +362,8 @@ function HistoryPage() {
           </li>
         ))}
         {filtered.length === 0 ? (
-          <li className="panel p-8 text-center text-sm text-muted-foreground">
-            No trades match these filters.
+          <li>
+            <EmptyState title="No trades match" description="Adjust quick filters or date range." />
           </li>
         ) : null}
       </ul>
@@ -270,13 +386,16 @@ function HistoryPage() {
                   {active.session} session · {fmtDate(active.date)} · {active.id}
                 </p>
               </div>
-              <button
-                onClick={close}
-                aria-label="Close trade detail"
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <CopyTradeLink tradeId={active.id} />
+                <button
+                  onClick={close}
+                  aria-label="Close trade detail"
+                  className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -285,6 +404,15 @@ function HistoryPage() {
               <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground">
                 {active.setup}
               </span>
+              {active.followedPlan ? (
+                <span className="rounded-full border border-win/30 bg-win/10 px-2.5 py-0.5 text-[11px] font-medium text-win">
+                  Followed plan
+                </span>
+              ) : (
+                <span className="rounded-full border border-loss/40 bg-loss/10 px-2.5 py-0.5 text-[11px] font-medium text-loss">
+                  Deviated from plan
+                </span>
+              )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -304,7 +432,9 @@ function HistoryPage() {
 
               <section className="rounded-xl border border-border bg-panel/40 p-4">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">After the trade</p>
-                <p className="mt-2 text-sm font-medium">Achieved reward: <RValue r={active.r} className="inline" /></p>
+                <p className="mt-2 text-sm font-medium">
+                  Achieved reward: <RValue r={active.r} className="inline" />
+                </p>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/90">{active.reviewNotes}</p>
                 {active.afterScreenshot ? (
                   <img

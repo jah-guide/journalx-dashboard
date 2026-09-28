@@ -108,9 +108,9 @@ function HistoryPage() {
           <button
             type="button"
             onClick={exportFiltered}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-panel px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-panel px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:w-auto sm:justify-start"
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4 shrink-0" />
             Export JSON
           </button>
         }
@@ -151,8 +151,8 @@ function HistoryPage() {
           />
         </div>
         <FilterSummaryPills filters={filters} />
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <div className="relative sm:col-span-2 xl:col-span-1">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="relative sm:col-span-2 lg:col-span-2 xl:col-span-2">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               ref={searchRef}
@@ -268,8 +268,8 @@ function HistoryPage() {
         </div>
       </Panel>
 
-      <div className="hidden panel overflow-hidden lg:block">
-        <table className="w-full text-sm">
+      <div className="panel hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[44rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-widest text-muted-foreground">
               <th className="px-5 py-3 font-medium">Date</th>
@@ -328,7 +328,7 @@ function HistoryPage() {
         ) : null}
       </div>
 
-      <ul className="space-y-3 lg:hidden">
+      <ul className="space-y-3 md:hidden">
         {filtered.map((t) => (
           <li key={t.id}>
             <button

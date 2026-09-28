@@ -71,7 +71,7 @@ function AddTrade() {
             <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">1</span>
             <div><h2 className="font-medium">Before the trade</h2><p className="text-xs text-muted-foreground">Your idea, risk-to-reward, and chart before entry.</p></div>
           </div>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_min(100%,280px)]">
             <div className="space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
@@ -86,7 +86,7 @@ function AddTrade() {
                 <div><label className={formLabelClass} htmlFor="trade-date">Entry date & time</label><input id="trade-date" type="datetime-local" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} className={formInputClass} /></div>
               </div>
               <div className="grid gap-6 sm:grid-cols-2">
-                <div><span className={formLabelClass}>Session</span><div className="grid grid-cols-3 gap-2">{SESSIONS.map((item) => <Choice key={item} active={session === item} onClick={() => setSession(item)}>{item}</Choice>)}</div></div>
+                <div><span className={formLabelClass}>Session</span><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{SESSIONS.map((item) => <Choice key={item} active={session === item} onClick={() => setSession(item)}>{item}</Choice>)}</div></div>
                 <div><label className={formLabelClass} htmlFor="planned-reward">Planned risk-to-reward</label><input id="planned-reward" placeholder="e.g. 1:3" value={plannedReward} onChange={(e) => setPlannedReward(e.target.value)} className={formInputClass} /><p className="mt-2 text-xs text-muted-foreground">The reward you planned relative to one unit of risk.</p></div>
               </div>
               <div className="grid gap-6 sm:grid-cols-2">
@@ -119,8 +119,8 @@ function AddTrade() {
 
         <Panel>
           <div className="mb-6 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">2</span><div><h2 className="font-medium">After the trade</h2><p className="text-xs text-muted-foreground">Optional while the trade is still pending. Complete it once you have an outcome.</p></div></div>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-            <div className="space-y-6"><div><span className={formLabelClass}>Outcome</span><div className="grid max-w-md grid-cols-3 gap-2">{OUTCOMES.map((item) => <Choice key={item} active={outcome === item} tone={item === "Win" ? "win" : item === "Loss" ? "loss" : "neutral"} onClick={() => setOutcome(item)}>{item}</Choice>)}</div></div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_min(100%,280px)]">
+            <div className="space-y-6"><div><span className={formLabelClass}>Outcome</span><div className="grid max-w-md grid-cols-2 gap-2 sm:grid-cols-3">{OUTCOMES.map((item) => <Choice key={item} active={outcome === item} tone={item === "Win" ? "win" : item === "Loss" ? "loss" : "neutral"} onClick={() => setOutcome(item)}>{item}</Choice>)}</div></div>
               <div><label className={formLabelClass} htmlFor="achieved-reward">Achieved reward <span className="normal-case tracking-normal">(R)</span></label><input id="achieved-reward" type="number" step="0.1" inputMode="decimal" placeholder="e.g. 2.4, -1, or 0" value={achievedReward} onChange={(e) => setAchievedReward(e.target.value)} className={cn(formInputClass, "max-w-md num")} /><p className="mt-2 text-xs text-muted-foreground">Your actual result relative to one unit of risk. No money is tracked.</p></div>
               <div><label className={formLabelClass} htmlFor="review-notes">Trade review <span className="normal-case tracking-normal">(optional)</span></label><textarea id="review-notes" rows={4} placeholder="What happened? Did you follow your plan?" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} className={cn(formInputClass, "resize-y")} /></div>
             </div>

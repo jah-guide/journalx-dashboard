@@ -67,12 +67,12 @@ function Dashboard() {
           </>
         }
         action={
-          <label className="flex flex-col gap-1.5 text-right">
+          <label className="flex w-full flex-col gap-1.5 sm:w-auto sm:text-right">
             <span className="label-caps">Period</span>
             <select
               value={period}
               onChange={(event) => setPeriod(event.target.value as "7" | "30" | "all")}
-              className={`${formInputClass} min-w-[140px]`}
+              className={`${formInputClass} w-full sm:min-w-[140px] sm:w-auto`}
             >
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
@@ -168,7 +168,7 @@ function Dashboard() {
                 <Link
                   to="/history"
                   search={{ trade: t.id }}
-                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-3.5 transition-colors hover:bg-accent/30 -mx-2 px-2 rounded-lg"
+                  className="-mx-2 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-3.5 transition-colors hover:bg-accent/30 sm:gap-4"
                 >
                   <img
                     src={t.screenshot}

@@ -63,7 +63,7 @@ function Analytics() {
         />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Panel>
           <SectionTitle>Plan adherence</SectionTitle>
           <p className="num text-3xl font-semibold text-primary">{planAdherence.toFixed(0)}%</p>
@@ -87,7 +87,7 @@ function Analytics() {
         >
           Equity curve
         </SectionTitle>
-        <EquityChart data={cumulative()} height={300} />
+        <EquityChart data={cumulative()} height={280} />
       </Panel>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">

@@ -17,7 +17,7 @@ export function Panel({
   variant?: "elevated" | "flat";
 }) {
   return (
-    <div className={cn(variant === "flat" ? "panel-flat p-5" : "panel p-5", className)}>
+    <div className={cn(variant === "flat" ? "panel-flat p-4 sm:p-5" : "panel p-4 sm:p-5", className)}>
       {children}
     </div>
   );
@@ -35,24 +35,24 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div className="max-w-2xl">
+    <header className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+      <div className="min-w-0 max-w-2xl flex-1">
         {eyebrow ? <p className="text-sm font-medium text-primary/90">{eyebrow}</p> : null}
         <h1 className={cn("text-2xl font-semibold sm:text-3xl", eyebrow && "mt-1")}>{title}</h1>
         {description ? (
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {action}
+      {action ? <div className="w-full shrink-0 sm:w-auto">{action}</div> : null}
     </header>
   );
 }
 
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mb-4 flex items-center justify-between gap-4 border-b border-border/60 pb-3">
-      <h2 className="text-sm font-semibold tracking-tight">{children}</h2>
-      {action}
+    <div className="mb-4 flex flex-col gap-2 border-b border-border/60 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <h2 className="min-w-0 text-sm font-semibold tracking-tight">{children}</h2>
+      {action ? <div className="shrink-0 text-xs sm:text-right">{action}</div> : null}
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function ThemeToggle() {
             type="button"
             variant="outline"
             size="icon"
-            className="relative h-9 w-9 shrink-0 border-border/70 bg-background/60 backdrop-blur-sm"
+            className="relative h-10 w-10 shrink-0 touch-manipulation border-border/70 bg-background/60 backdrop-blur-sm sm:h-9 sm:w-9"
             onClick={toggleTheme}
             aria-label={label}
             aria-pressed={isDark}

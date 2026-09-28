@@ -18,7 +18,11 @@ export function QuickFilterChips({
   ariaLabel?: string;
 }) {
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={ariaLabel}>
+    <div
+      className="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:thin] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+      role="group"
+      aria-label={ariaLabel}
+    >
       {chips.map((chip) => {
         const active = chip.id === activeId;
         return (
@@ -29,7 +33,7 @@ export function QuickFilterChips({
             aria-pressed={active}
             onClick={() => onSelect(active ? "all" : chip.id)}
             className={cn(
-              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
               active
                 ? "border-primary bg-primary/15 text-primary"
                 : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",

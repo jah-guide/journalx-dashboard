@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { LayoutDashboard, PlusCircle, History, BarChart3, NotebookPen } from "lucide-react";
 import type { ReactNode } from "react";
+import { JournalMark } from "@/components/journal-mark";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -16,7 +18,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen lg:flex">
       <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border/80 bg-card/30 p-6 gap-8 backdrop-blur-sm">
-        <Brand />
+        <div className="flex items-start justify-between gap-3">
+          <Brand />
+          <ThemeToggle />
+        </div>
         <nav className="flex flex-col gap-0.5">
           {nav.map(({ to, label, icon: Icon }) => (
             <Link
@@ -49,8 +54,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-border/80 px-5 py-4 lg:hidden">
+        <header className="flex items-center justify-between gap-3 border-b border-border/80 px-5 py-4 lg:hidden">
           <Brand compact />
+          <ThemeToggle />
         </header>
         <main className="min-w-0 flex-1 px-5 pb-28 pt-6 lg:mx-auto lg:max-w-6xl lg:px-10 lg:pb-14 lg:pt-10">
           {children}
@@ -77,8 +83,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 function Brand({ compact }: { compact?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-primary/30 bg-primary/15 font-display text-sm font-bold text-primary shadow-[0_0_24px_-8px_var(--color-primary)]">
-        JX
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-primary/30 bg-primary/15 p-1.5 text-primary shadow-[0_0_24px_-8px_var(--color-primary)]">
+        <JournalMark />
       </span>
       {!compact ? (
         <div>
